@@ -13,9 +13,9 @@ CREATE SCHEMA IF NOT EXISTS seguro_g29969634;
 CREATE SCHEMA IF NOT EXISTS seguro_dw_g29969634;
 
 
--- =====================================================
--- 2. MODELO TRANSACCIONAL - UBICACIÓN
--- =====================================================
+-- ============================================================
+-- 1. UBICACIÓN
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.pais (
     cod_pais VARCHAR(10) PRIMARY KEY,
@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.sucursal (
 );
 
 
--- =====================================================
--- 3. MODELO TRANSACCIONAL - PRODUCTOS
--- =====================================================
+-- ============================================================
+-- 2. PRODUCTOS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.tipo_producto (
     cod_tipo_producto VARCHAR(10) PRIMARY KEY,
@@ -55,9 +55,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.tipo_producto (
 CREATE TABLE IF NOT EXISTS seguro_g29969634.producto (
     cod_producto VARCHAR(10) PRIMARY KEY,
     nb_producto VARCHAR(100) NOT NULL,
-    descripcion VARCHAR(255),
+    descripcion VARCHAR(255) NOT NULL,
     cod_tipo_producto VARCHAR(10) NOT NULL,
-    calificacion NUMERIC(3,2),
+    calificacion NUMERIC(3,2) NOT NULL,
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -72,15 +72,15 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.producto (
         )
 );
 
--- =====================================================
--- 4. MODELO TRANSACCIONAL - CLIENTES Y CONTRATOS
--- =====================================================
+-- ============================================================
+-- 3. CLIENTES Y CONTRATOS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.cliente (
     cod_cliente VARCHAR(10) PRIMARY KEY,
     nb_cliente VARCHAR(150) NOT NULL,
     ci_rif VARCHAR(20) NOT NULL UNIQUE,
-    telefono VARCHAR(20),
+    telefono VARCHAR(20) NOT NULL,
     direccion VARCHAR(255),
     sexo CHAR(1) NOT NULL,
     email VARCHAR(150),
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.cliente (
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.contrato (
     nro_contrato VARCHAR(20) PRIMARY KEY,
-    descrip_contrato VARCHAR(255)
+    descrip_contrato VARCHAR(255) NOT NULL
 );
 
 
@@ -143,9 +143,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.registro_contrato (
         )
 );
 
--- =====================================================
--- 5. MODELO TRANSACCIONAL - EVALUACIONES
--- =====================================================
+-- ============================================================
+-- 4. EVALUACIONES
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.evaluacion_servicio (
     cod_evaluacion_servicio VARCHAR(10) PRIMARY KEY,
@@ -184,9 +184,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.recomienda (
         CHECK (recomienda_amigo IN ('SI', 'NO'))
 );
 
--- =====================================================
--- 6. MODELO TRANSACCIONAL - SINIESTROS
--- =====================================================
+-- ============================================================
+-- 5. SINIESTROS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.siniestro (
     nro_siniestro VARCHAR(20) PRIMARY KEY,
@@ -223,17 +223,27 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.registro_siniestro (
             OR fecha_respuesta >= fecha_siniestro
         ),
 
-    CONSTRAINT chk_registro_siniestro_monto_solicitado
-        CHECK (monto_solicitado >= 0),
+    CONSTRAINT chk_registro_siniestro_montos
+        CHECK (
+            monto_solicitado > 0
+            AND monto_reconocido >= 0
+            AND monto_reconocido <= monto_solicitado
+        ),
 
-    CONSTRAINT chk_registro_siniestro_monto_reconocido
-        CHECK (monto_reconocido >= 0)
+    CONSTRAINT chk_registro_siniestro_rechazado
+        CHECK (
+            id_rechazo <> 'SI'
+            OR (
+                fecha_respuesta IS NOT NULL
+                AND monto_reconocido = 0
+            )
+        )
 );
 
 
--- =====================================================
--- 7. MODELO TRANSACCIONAL - METAS COMERCIALES
--- =====================================================
+-- ============================================================
+-- 6. METAS COMERCIALES
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.meta_comercial (
     id_meta BIGSERIAL PRIMARY KEY,
@@ -267,12 +277,6 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.meta_comercial (
         CHECK (meta_asegurados >= 0)
 );
 
--- ============================================================
--- PROYECTO BI - SEGUROS ALTA VISTA
--- CREACIÓN DEL DATA WAREHOUSE
--- Esquema: seguro_dw_g29969634
--- ============================================================
-
 
 -- ============================================================
 -- 1. DIMENSIONES
@@ -296,11 +300,20 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_tiempo (
     desc_trimestre VARCHAR(10) NOT NULL,
     desc_semestre VARCHAR(10) NOT NULL,
 
+    CONSTRAINT uq_dim_tiempo_componentes
+        UNIQUE (cod_anio, cod_mes, cod_dia),
+
     CONSTRAINT chk_dim_tiempo_mes
         CHECK (cod_mes BETWEEN 1 AND 12),
 
     CONSTRAINT chk_dim_tiempo_dia
-        CHECK (cod_dia BETWEEN 1 AND 31)
+        CHECK (cod_dia BETWEEN 1 AND 31),
+
+    CONSTRAINT chk_dim_tiempo_trimestre
+        CHECK (desc_trimestre IN ('Q1', 'Q2', 'Q3', 'Q4')),
+
+    CONSTRAINT chk_dim_tiempo_semestre
+        CHECK (desc_semestre IN ('S1', 'S2'))
 );
 
 
@@ -315,17 +328,14 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_cliente (
 
     cod_cliente VARCHAR(10) NOT NULL UNIQUE,
     nb_cliente VARCHAR(150) NOT NULL,
-    ci_rif VARCHAR(20) NOT NULL,
-    telefono VARCHAR(20),
+    ci_rif VARCHAR(20) NOT NULL UNIQUE,
+    telefono VARCHAR(20) NOT NULL,
     direccion VARCHAR(255),
-    sexo CHAR(1),
+    sexo CHAR(1) NOT NULL,
     email VARCHAR(150),
 
     CONSTRAINT chk_dim_cliente_sexo
-        CHECK (
-            sexo IS NULL
-            OR sexo IN ('F', 'M')
-        )
+        CHECK (sexo IN ('F', 'M'))
 );
 
 
@@ -340,17 +350,15 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_producto (
 
     cod_producto VARCHAR(10) NOT NULL UNIQUE,
     nb_producto VARCHAR(100) NOT NULL,
-    descrip_producto VARCHAR(255),
+    descrip_producto VARCHAR(255) NOT NULL,
     cod_tipo_producto VARCHAR(10) NOT NULL,
     nb_tipo_producto VARCHAR(100) NOT NULL,
-    calificacion NUMERIC(3,2),
+    calificacion NUMERIC(3,2) NOT NULL,
 
     CONSTRAINT chk_dim_producto_calificacion
-        CHECK (
-            calificacion IS NULL
-            OR calificacion BETWEEN 1 AND 5
-        )
+        CHECK (calificacion BETWEEN 1 AND 5)
 );
+
 
 
 -- ------------------------------------------------------------
@@ -362,7 +370,7 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_contrato (
         PRIMARY KEY,
 
     nro_contrato VARCHAR(20) NOT NULL UNIQUE,
-    descrip_contrato VARCHAR(255)
+    descrip_contrato VARCHAR(255) NOT NULL
 );
 
 
@@ -466,39 +474,28 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.fact_registro_contrato (
 
     CONSTRAINT fk_fact_contrato_fecha_inicio
         FOREIGN KEY (sk_fecha_inicio)
-        REFERENCES seguro_dw_g29969634.dim_tiempo(
-            sk_dim_tiempo
-        ),
+        REFERENCES seguro_dw_g29969634.dim_tiempo(sk_dim_tiempo),
 
     CONSTRAINT fk_fact_contrato_fecha_fin
         FOREIGN KEY (sk_fecha_fin)
-        REFERENCES seguro_dw_g29969634.dim_tiempo(
-            sk_dim_tiempo
-        ),
+        REFERENCES seguro_dw_g29969634.dim_tiempo(sk_dim_tiempo),
 
     CONSTRAINT fk_fact_contrato_cliente
         FOREIGN KEY (sk_dim_cliente)
-        REFERENCES seguro_dw_g29969634.dim_cliente(
-            sk_dim_cliente
-        ),
+        REFERENCES seguro_dw_g29969634.dim_cliente(sk_dim_cliente),
 
     CONSTRAINT fk_fact_contrato_contrato
         FOREIGN KEY (sk_dim_contrato)
-        REFERENCES seguro_dw_g29969634.dim_contrato(
-            sk_dim_contrato
-        ),
+        REFERENCES seguro_dw_g29969634.dim_contrato(sk_dim_contrato),
 
     CONSTRAINT fk_fact_contrato_producto
         FOREIGN KEY (sk_dim_producto)
-        REFERENCES seguro_dw_g29969634.dim_producto(
-            sk_dim_producto
-        ),
+        REFERENCES seguro_dw_g29969634.dim_producto(sk_dim_producto),
 
     CONSTRAINT fk_fact_contrato_estado
         FOREIGN KEY (sk_dim_estado)
-        REFERENCES seguro_dw_g29969634.dim_estado_contrato(
-            sk_dim_estado
-        ),
+        REFERENCES seguro_dw_g29969634.dim_estado_contrato(sk_dim_estado),
+
 
     CONSTRAINT chk_fact_contrato_monto
         CHECK (monto >= 0)
@@ -538,53 +535,46 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.fact_registro_siniestro (
 
     CONSTRAINT fk_fact_siniestro_fecha
         FOREIGN KEY (sk_fecha_siniestro)
-        REFERENCES seguro_dw_g29969634.dim_tiempo(
-            sk_dim_tiempo
-        ),
+        REFERENCES seguro_dw_g29969634.dim_tiempo(sk_dim_tiempo),
 
     CONSTRAINT fk_fact_siniestro_respuesta
         FOREIGN KEY (sk_fecha_respuesta)
-        REFERENCES seguro_dw_g29969634.dim_tiempo(
-            sk_dim_tiempo
-        ),
+        REFERENCES seguro_dw_g29969634.dim_tiempo(sk_dim_tiempo),
 
     CONSTRAINT fk_fact_siniestro_cliente
         FOREIGN KEY (sk_dim_cliente)
-        REFERENCES seguro_dw_g29969634.dim_cliente(
-            sk_dim_cliente
-        ),
+        REFERENCES seguro_dw_g29969634.dim_cliente(sk_dim_cliente),
 
     CONSTRAINT fk_fact_siniestro_contrato
         FOREIGN KEY (sk_dim_contrato)
-        REFERENCES seguro_dw_g29969634.dim_contrato(
-            sk_dim_contrato
-        ),
+        REFERENCES seguro_dw_g29969634.dim_contrato(sk_dim_contrato),
 
     CONSTRAINT fk_fact_siniestro_sucursal
         FOREIGN KEY (sk_dim_sucursal)
-        REFERENCES seguro_dw_g29969634.dim_sucursal(
-            sk_dim_sucursal
-        ),
+        REFERENCES seguro_dw_g29969634.dim_sucursal(sk_dim_sucursal),
 
     CONSTRAINT fk_fact_siniestro_producto
         FOREIGN KEY (sk_dim_producto)
-        REFERENCES seguro_dw_g29969634.dim_producto(
-            sk_dim_producto
-        ),
+        REFERENCES seguro_dw_g29969634.dim_producto(sk_dim_producto),
 
     CONSTRAINT fk_fact_siniestro_tipo
         FOREIGN KEY (sk_dim_siniestro)
-        REFERENCES seguro_dw_g29969634.dim_siniestro(
-            sk_dim_siniestro
-        ),
+        REFERENCES seguro_dw_g29969634.dim_siniestro(sk_dim_siniestro),
 
     CONSTRAINT chk_fact_siniestro_rechazo
         CHECK (id_rechazo IN ('SI', 'NO')),
 
     CONSTRAINT chk_fact_siniestro_montos
         CHECK (
-            monto_reconocido >= 0
-            AND monto_solicitado >= 0
+            monto_solicitado > 0
+            AND monto_reconocido >= 0
+            AND monto_reconocido <= monto_solicitado
+        ),
+
+    CONSTRAINT chk_fact_siniestro_rechazado
+        CHECK (
+            id_rechazo <> 'SI'
+            OR monto_reconocido = 0
         )
 );
 

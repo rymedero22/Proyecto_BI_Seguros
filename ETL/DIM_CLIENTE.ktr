@@ -2,7 +2,7 @@
 <transformation>
   <info>
     <name>DIM_CLIENTE</name>
-    <description>Carga incremental de DIM_CLIENTE con pasos separados para recorte de espacios, normalización de textos, limpieza de CI/RIF, limpieza de teléfono y normalización del prefijo telefónico venezolano.</description>
+    <description/>
     <extended_description/>
     <trans_version/>
     <trans_type>Normal</trans_type>
@@ -489,33 +489,38 @@
   </connection>
   <order>
     <hop>
-      <from>Leer clientes fuente</from>
-      <to>Recortar espacios</to>
+      <from>Leer CLIENTE</from>
+      <to>Eliminar Espacios</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Recortar espacios</from>
-      <to>Estandarizar textos</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Estandarizar textos</from>
-      <to>Limpiar CI_RIF</to>
+      <from>Eliminar Espacios</from>
+      <to>Convertir Mayúsculas</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
       <from>Limpiar CI_RIF</from>
-      <to>Limpiar teléfono</to>
+      <to>Limpiar Teléfono</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Limpiar teléfono</from>
-      <to>Normalizar prefijo telefónico</to>
+      <from>Limpiar Teléfono</from>
+      <to>Seleccionar Campos</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Normalizar prefijo telefónico</from>
+      <from>Seleccionar Campos</from>
       <to>Cargar DIM_CLIENTE</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Convertir Mayúsculas</from>
+      <to>Convertir Minuscula </to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Convertir Minuscula </from>
+      <to>Limpiar CI_RIF</to>
       <enabled>Y</enabled>
     </hop>
   </order>
@@ -588,12 +593,12 @@
     </remotesteps>
     <GUI>
       <xloc>832</xloc>
-      <yloc>256</yloc>
+      <yloc>272</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Estandarizar textos</name>
+    <name>Convertir Mayúsculas</name>
     <type>StringOperations</type>
     <description/>
     <distribute>Y</distribute>
@@ -621,11 +626,11 @@
         <in_stream_name>nb_cliente</in_stream_name>
         <out_stream_name/>
         <trim_type>none</trim_type>
-        <lower_upper>none</lower_upper>
+        <lower_upper>upper</lower_upper>
         <padding_type>none</padding_type>
         <pad_char/>
         <pad_len/>
-        <init_cap>yes</init_cap>
+        <init_cap>no</init_cap>
         <mask_xml>none</mask_xml>
         <digits>none</digits>
         <remove_special_characters>none</remove_special_characters>
@@ -647,19 +652,6 @@
         <in_stream_name>direccion</in_stream_name>
         <out_stream_name/>
         <trim_type>none</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>yes</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>sexo</in_stream_name>
-        <out_stream_name/>
-        <trim_type>none</trim_type>
         <lower_upper>upper</lower_upper>
         <padding_type>none</padding_type>
         <pad_char/>
@@ -670,10 +662,10 @@
         <remove_special_characters>none</remove_special_characters>
       </field>
       <field>
-        <in_stream_name>email</in_stream_name>
+        <in_stream_name>sexo</in_stream_name>
         <out_stream_name/>
         <trim_type>none</trim_type>
-        <lower_upper>lower</lower_upper>
+        <lower_upper>upper</lower_upper>
         <padding_type>none</padding_type>
         <pad_char/>
         <pad_len/>
@@ -692,13 +684,131 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>352</xloc>
+      <xloc>320</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Leer clientes fuente</name>
+    <name>Eliminar Espacios</name>
+    <type>StringOperations</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <fields>
+      <field>
+        <in_stream_name>cod_cliente</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>nb_cliente</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>ci_rif</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>telefono</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>direccion</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>sexo</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>email</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>192</xloc>
+      <yloc>144</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Leer CLIENTE</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -936,13 +1046,13 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>512</xloc>
+      <xloc>560</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Limpiar teléfono</name>
+    <name>Limpiar Teléfono</name>
     <type>ReplaceString</type>
     <description/>
     <distribute>Y</distribute>
@@ -957,7 +1067,7 @@ ORDER BY cod_cliente;</sql>
         <in_stream_name>telefono</in_stream_name>
         <out_stream_name/>
         <use_regex>yes</use_regex>
-        <replace_string>[^0-9]</replace_string>
+        <replace_string>[^0-9+]</replace_string>
         <replace_by_string/>
         <set_empty_string>Y</set_empty_string>
         <replace_field_by_string/>
@@ -975,14 +1085,14 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>672</xloc>
+      <xloc>688</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Normalizar prefijo telefónico</name>
-    <type>ReplaceString</type>
+    <name>Seleccionar Campos</name>
+    <type>SelectValues</type>
     <description/>
     <distribute>Y</distribute>
     <custom_distribution/>
@@ -993,17 +1103,27 @@ ORDER BY cod_cliente;</sql>
     </partitioning>
     <fields>
       <field>
-        <in_stream_name>telefono</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>^58([0-9]{10})$</replace_string>
-        <replace_by_string>0$1</replace_by_string>
-        <set_empty_string>N</set_empty_string>
-        <replace_field_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-        <is_unicode>yes</is_unicode>
+        <name>cod_cliente</name>
       </field>
+      <field>
+        <name>nb_cliente</name>
+      </field>
+      <field>
+        <name>ci_rif</name>
+      </field>
+      <field>
+        <name>telefono</name>
+      </field>
+      <field>
+        <name>direccion</name>
+      </field>
+      <field>
+        <name>sexo</name>
+      </field>
+      <field>
+        <name>email</name>
+      </field>
+      <select_unspecified>N</select_unspecified>
     </fields>
     <attributes/>
     <cluster_schema/>
@@ -1020,7 +1140,7 @@ ORDER BY cod_cliente;</sql>
     </GUI>
   </step>
   <step>
-    <name>Recortar espacios</name>
+    <name>Convertir Minuscula </name>
     <type>StringOperations</type>
     <description/>
     <distribute>Y</distribute>
@@ -1032,93 +1152,15 @@ ORDER BY cod_cliente;</sql>
     </partitioning>
     <fields>
       <field>
-        <in_stream_name>cod_cliente</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>nb_cliente</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>ci_rif</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>telefono</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>direccion</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
-        <in_stream_name>sexo</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-      <field>
         <in_stream_name>email</in_stream_name>
         <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>none</lower_upper>
+        <trim_type>none</trim_type>
+        <lower_upper>lower</lower_upper>
         <padding_type>none</padding_type>
         <pad_char/>
         <pad_len/>
-        <init_cap>no</init_cap>
-        <mask_xml>none</mask_xml>
+        <init_cap>N</init_cap>
+        <mask_xml>None</mask_xml>
         <digits>none</digits>
         <remove_special_characters>none</remove_special_characters>
       </field>
@@ -1132,7 +1174,7 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>208</xloc>
+      <xloc>448</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>

@@ -1,6 +1,12 @@
--- =====================================================
--- 2. MODELO TRANSACCIONAL - UBICACIÓN
--- =====================================================
+-- ============================================================
+-- PROYECTO BI - SEGUROS ALTA VISTA
+-- 02. CREACIÓN DEL MODELO TRANSACCIONAL
+-- Esquema: seguro_g29969634
+-- ============================================================
+
+-- ============================================================
+-- 1. UBICACIÓN
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.pais (
     cod_pais VARCHAR(10) PRIMARY KEY,
@@ -28,9 +34,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.sucursal (
 );
 
 
--- =====================================================
--- 3. MODELO TRANSACCIONAL - PRODUCTOS
--- =====================================================
+-- ============================================================
+-- 2. PRODUCTOS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.tipo_producto (
     cod_tipo_producto VARCHAR(10) PRIMARY KEY,
@@ -40,9 +46,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.tipo_producto (
 CREATE TABLE IF NOT EXISTS seguro_g29969634.producto (
     cod_producto VARCHAR(10) PRIMARY KEY,
     nb_producto VARCHAR(100) NOT NULL,
-    descripcion VARCHAR(255),
+    descripcion VARCHAR(255) NOT NULL,
     cod_tipo_producto VARCHAR(10) NOT NULL,
-    calificacion NUMERIC(3,2),
+    calificacion NUMERIC(3,2) NOT NULL,
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -57,15 +63,15 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.producto (
         )
 );
 
--- =====================================================
--- 4. MODELO TRANSACCIONAL - CLIENTES Y CONTRATOS
--- =====================================================
+-- ============================================================
+-- 3. CLIENTES Y CONTRATOS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.cliente (
     cod_cliente VARCHAR(10) PRIMARY KEY,
     nb_cliente VARCHAR(150) NOT NULL,
     ci_rif VARCHAR(20) NOT NULL UNIQUE,
-    telefono VARCHAR(20),
+    telefono VARCHAR(20) NOT NULL,
     direccion VARCHAR(255),
     sexo CHAR(1) NOT NULL,
     email VARCHAR(150),
@@ -84,7 +90,7 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.cliente (
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.contrato (
     nro_contrato VARCHAR(20) PRIMARY KEY,
-    descrip_contrato VARCHAR(255)
+    descrip_contrato VARCHAR(255) NOT NULL
 );
 
 
@@ -128,9 +134,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.registro_contrato (
         )
 );
 
--- =====================================================
--- 5. MODELO TRANSACCIONAL - EVALUACIONES
--- =====================================================
+-- ============================================================
+-- 4. EVALUACIONES
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.evaluacion_servicio (
     cod_evaluacion_servicio VARCHAR(10) PRIMARY KEY,
@@ -169,9 +175,9 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.recomienda (
         CHECK (recomienda_amigo IN ('SI', 'NO'))
 );
 
--- =====================================================
--- 6. MODELO TRANSACCIONAL - SINIESTROS
--- =====================================================
+-- ============================================================
+-- 5. SINIESTROS
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.siniestro (
     nro_siniestro VARCHAR(20) PRIMARY KEY,
@@ -208,17 +214,27 @@ CREATE TABLE IF NOT EXISTS seguro_g29969634.registro_siniestro (
             OR fecha_respuesta >= fecha_siniestro
         ),
 
-    CONSTRAINT chk_registro_siniestro_monto_solicitado
-        CHECK (monto_solicitado >= 0),
+    CONSTRAINT chk_registro_siniestro_montos
+        CHECK (
+            monto_solicitado > 0
+            AND monto_reconocido >= 0
+            AND monto_reconocido <= monto_solicitado
+        ),
 
-    CONSTRAINT chk_registro_siniestro_monto_reconocido
-        CHECK (monto_reconocido >= 0)
+    CONSTRAINT chk_registro_siniestro_rechazado
+        CHECK (
+            id_rechazo <> 'SI'
+            OR (
+                fecha_respuesta IS NOT NULL
+                AND monto_reconocido = 0
+            )
+        )
 );
 
 
--- =====================================================
--- 7. MODELO TRANSACCIONAL - METAS COMERCIALES
--- =====================================================
+-- ============================================================
+-- 6. METAS COMERCIALES
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS seguro_g29969634.meta_comercial (
     id_meta BIGSERIAL PRIMARY KEY,
