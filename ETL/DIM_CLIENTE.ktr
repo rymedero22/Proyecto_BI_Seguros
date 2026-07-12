@@ -515,11 +515,6 @@
     </hop>
     <hop>
       <from>Convertir Mayúsculas</from>
-      <to>Convertir Minuscula </to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Convertir Minuscula </from>
       <to>Limpiar CI_RIF</to>
       <enabled>Y</enabled>
     </hop>
@@ -592,7 +587,7 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>832</xloc>
+      <xloc>736</xloc>
       <yloc>272</yloc>
       <draw>Y</draw>
     </GUI>
@@ -671,6 +666,19 @@
         <pad_len/>
         <init_cap>no</init_cap>
         <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+      <field>
+        <in_stream_name>email</in_stream_name>
+        <out_stream_name/>
+        <trim_type>none</trim_type>
+        <lower_upper>upper</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>N</init_cap>
+        <mask_xml>None</mask_xml>
         <digits>none</digits>
         <remove_special_characters>none</remove_special_characters>
       </field>
@@ -1046,7 +1054,7 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>560</xloc>
+      <xloc>464</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
@@ -1085,7 +1093,7 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>688</xloc>
+      <xloc>592</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
@@ -1134,47 +1142,7 @@ ORDER BY cod_cliente;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>832</xloc>
-      <yloc>144</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Convertir Minuscula </name>
-    <type>StringOperations</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name/>
-    </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>email</in_stream_name>
-        <out_stream_name/>
-        <trim_type>none</trim_type>
-        <lower_upper>lower</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>N</init_cap>
-        <mask_xml>None</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
-      </field>
-    </fields>
-    <attributes/>
-    <cluster_schema/>
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>448</xloc>
+      <xloc>736</xloc>
       <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
