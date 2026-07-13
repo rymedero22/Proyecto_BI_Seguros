@@ -1,14 +1,16 @@
--- ============================================================
+-- ======================================================
 -- PROYECTO BI - SEGUROS ALTA VISTA
 -- CREACIÓN DEL DATA WAREHOUSE
 -- Esquema: seguro_dw_g29969634
--- ============================================================
+-- =====================================================
+-- CREACIÓN DE ESQUEMA
+-- =====================================================
 
+CREATE SCHEMA IF NOT EXISTS seguro_dw_g29969634;
 
 -- ============================================================
 -- 1. DIMENSIONES
 -- ============================================================
-
 
 -- ------------------------------------------------------------
 -- DIMENSIÓN TIEMPO
@@ -42,7 +44,6 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_tiempo (
     CONSTRAINT chk_dim_tiempo_semestre
         CHECK (desc_semestre IN ('S1', 'S2'))
 );
-
 
 -- ------------------------------------------------------------
 -- DIMENSIÓN CLIENTE
@@ -87,7 +88,6 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_producto (
 );
 
 
-
 -- ------------------------------------------------------------
 -- DIMENSIÓN CONTRATO
 -- ------------------------------------------------------------
@@ -99,7 +99,6 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_contrato (
     nro_contrato VARCHAR(20) NOT NULL UNIQUE,
     descrip_contrato VARCHAR(255) NOT NULL
 );
-
 
 -- ------------------------------------------------------------
 -- DIMENSIÓN SUCURSAL
@@ -119,7 +118,6 @@ CREATE TABLE IF NOT EXISTS seguro_dw_g29969634.dim_sucursal (
     cod_pais VARCHAR(10) NOT NULL,
     nb_pais VARCHAR(100) NOT NULL
 );
-
 
 -- ------------------------------------------------------------
 -- DIMENSIÓN ESTADO DEL CONTRATO
