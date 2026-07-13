@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>DIM_SINIESTRO</name>
-    <description/>
+    <name>DIM_ESTADO_CONTRATO</name>
+    <description>Carga incremental de la dimensión de estados de contrato.</description>
     <extended_description/>
     <trans_version/>
     <trans_type>Normal</trans_type>
+    <trans_status>0</trans_status>
     <directory>/</directory>
     <parameters>
     </parameters>
@@ -427,9 +428,9 @@
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2026/07/12 03:19:45.903</created_date>
+    <created_date>2026/07/12 00:09:52.833</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2026/07/12 03:19:45.903</modified_date>
+    <modified_date>2026/07/12 00:09:52.833</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -488,25 +489,77 @@
   </connection>
   <order>
     <hop>
-      <from>Extraer Siniestros</from>
-      <to>Limpiar y Estandarizar Textos</to>
+      <from>Leer ESTADOS CONTRATO</from>
+      <to>Eliminar Espacios</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Limpiar y Estandarizar Textos</from>
-      <to>Normalizar Espacios</to>
+      <from>Eliminar Espacios</from>
+      <to>Convertir Mayúsculas</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Normalizar Espacios</from>
-      <to>Insert / update</to>
+      <from>Convertir Mayúsculas</from>
+      <to>Asignar Código Estado</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Asignar Código Estado</from>
+      <to>Seleccionar Campos</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Seleccionar Campos</from>
+      <to>Cargar DIM_ESTADO_CONTRATO</to>
       <enabled>Y</enabled>
     </hop>
   </order>
   <step>
-    <name>Extraer Siniestros</name>
-    <type>TableInput</type>
-    <description/>
+    <name>Asignar Código Estado</name>
+    <type>ValueMapper</type>
+    <description>Asigna el código de dos caracteres correspondiente a cada estado.</description>
+    <distribute>N</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <field_to_use>estado_contrato</field_to_use>
+    <target_field>cod_estado</target_field>
+    <non_match_default/>
+    <fields>
+      <field>
+        <source_value>ACTIVO</source_value>
+        <target_value>AC</target_value>
+      </field>
+      <field>
+        <source_value>VENCIDO</source_value>
+        <target_value>VE</target_value>
+      </field>
+      <field>
+        <source_value>SUSPENDIDO</source_value>
+        <target_value>SU</target_value>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>624</xloc>
+      <yloc>160</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Cargar DIM_ESTADO_CONTRATO</name>
+    <type>InsertUpdate</type>
+    <description>Inserta estados nuevos y actualiza su descripción.</description>
     <distribute>Y</distribute>
     <custom_distribution/>
     <copies>1</copies>
@@ -515,11 +568,139 @@
       <schema_name/>
     </partitioning>
     <connection>SEGUROS_BI</connection>
-    <sql>SELECT
-    s.nro_siniestro,
-    s.descripcion_siniestro AS descrip_siniestro
-FROM seguro_g29969634.siniestro s
-ORDER BY s.nro_siniestro;</sql>
+    <commit>100</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema>seguro_dw_g29969634</schema>
+      <table>dim_estado_contrato</table>
+      <key>
+        <name>cod_estado</name>
+        <field>cod_estado</field>
+        <condition>=</condition>
+        <name2/>
+      </key>
+      <value>
+        <name>cod_estado</name>
+        <rename>cod_estado</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>descrip_estado</name>
+        <rename>descrip_estado</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>816</xloc>
+      <yloc>272</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Convertir Mayúsculas</name>
+    <type>StringOperations</type>
+    <description>Estandariza la descripción del estado en mayúsculas.</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <fields>
+      <field>
+        <in_stream_name>estado_contrato</in_stream_name>
+        <out_stream_name/>
+        <trim_type>none</trim_type>
+        <lower_upper>upper</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>416</xloc>
+      <yloc>160</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Eliminar Espacios</name>
+    <type>StringOperations</type>
+    <description>Elimina espacios al inicio y al final del estado.</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <fields>
+      <field>
+        <in_stream_name>estado_contrato</in_stream_name>
+        <out_stream_name/>
+        <trim_type>both</trim_type>
+        <lower_upper>none</lower_upper>
+        <padding_type>none</padding_type>
+        <pad_char/>
+        <pad_len/>
+        <init_cap>no</init_cap>
+        <mask_xml>none</mask_xml>
+        <digits>none</digits>
+        <remove_special_characters>none</remove_special_characters>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>224</xloc>
+      <yloc>160</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Leer ESTADOS CONTRATO</name>
+    <type>TableInput</type>
+    <description>Extrae los estados distintos registrados en los contratos.</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>SEGUROS_BI</connection>
+    <sql>SELECT DISTINCT
+    estado_contrato
+FROM seguro_g29969634.registro_contrato
+WHERE estado_contrato IS NOT NULL
+ORDER BY estado_contrato;</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -530,34 +711,11 @@ ORDER BY s.nro_siniestro;</sql>
       <value-meta>
         <type>String</type>
         <storagetype>normal</storagetype>
-        <name>nro_siniestro</name>
+        <name>estado_contrato</name>
         <length>20</length>
         <precision>-1</precision>
-        <origin>Table input</origin>
-        <comments>nro_siniestro</comments>
-        <conversion_Mask/>
-        <decimal_symbol>.</decimal_symbol>
-        <grouping_symbol>,</grouping_symbol>
-        <currency_symbol/>
-        <trim_type>none</trim_type>
-        <case_insensitive>N</case_insensitive>
-        <collator_disabled>Y</collator_disabled>
-        <collator_strength>0</collator_strength>
-        <sort_descending>N</sort_descending>
-        <output_padding>N</output_padding>
-        <date_format_lenient>N</date_format_lenient>
-        <date_format_locale>es_419</date_format_locale>
-        <date_format_timezone>America/Caracas</date_format_timezone>
-        <lenient_string_to_number>N</lenient_string_to_number>
-      </value-meta>
-      <value-meta>
-        <type>String</type>
-        <storagetype>normal</storagetype>
-        <name>descrip_siniestro</name>
-        <length>255</length>
-        <precision>-1</precision>
-        <origin>Table input</origin>
-        <comments>descrip_siniestro</comments>
+        <origin>Leer ESTADOS CONTRATO</origin>
+        <comments>estado_contrato</comments>
         <conversion_Mask/>
         <decimal_symbol>.</decimal_symbol>
         <grouping_symbol>,</grouping_symbol>
@@ -583,64 +741,15 @@ ORDER BY s.nro_siniestro;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>200</xloc>
-      <yloc>100</yloc>
+      <xloc>80</xloc>
+      <yloc>160</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Insert / update</name>
-    <type>InsertUpdate</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name/>
-    </partitioning>
-    <connection>SEGUROS_BI</connection>
-    <commit>100</commit>
-    <update_bypassed>N</update_bypassed>
-    <lookup>
-      <schema>seguro_dw_g29969634
-</schema>
-      <table>dim_siniestro</table>
-      <key>
-        <name>nro_siniestro</name>
-        <field>nro_siniestro</field>
-        <condition>=</condition>
-        <name2/>
-      </key>
-      <value>
-        <name>nro_siniestro</name>
-        <rename>nro_siniestro</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>descrip_siniestro</name>
-        <rename>descrip_siniestro</rename>
-        <update>Y</update>
-      </value>
-    </lookup>
-    <attributes/>
-    <cluster_schema/>
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>800</xloc>
-      <yloc>100</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Limpiar y Estandarizar Textos</name>
-    <type>StringOperations</type>
-    <description/>
+    <name>Seleccionar Campos</name>
+    <type>SelectValues</type>
+    <description>Selecciona y renombra los campos de la dimensión.</description>
     <distribute>Y</distribute>
     <custom_distribution/>
     <copies>1</copies>
@@ -650,31 +759,14 @@ ORDER BY s.nro_siniestro;</sql>
     </partitioning>
     <fields>
       <field>
-        <in_stream_name>nro_siniestro</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>upper</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>N</init_cap>
-        <mask_xml>None</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
+        <name>cod_estado</name>
+        <rename>cod_estado</rename>
       </field>
       <field>
-        <in_stream_name>descrip_siniestro</in_stream_name>
-        <out_stream_name/>
-        <trim_type>both</trim_type>
-        <lower_upper>upper</lower_upper>
-        <padding_type>none</padding_type>
-        <pad_char/>
-        <pad_len/>
-        <init_cap>N</init_cap>
-        <mask_xml>None</mask_xml>
-        <digits>none</digits>
-        <remove_special_characters>none</remove_special_characters>
+        <name>estado_contrato</name>
+        <rename>descrip_estado</rename>
       </field>
+      <select_unspecified>N</select_unspecified>
     </fields>
     <attributes/>
     <cluster_schema/>
@@ -685,59 +777,8 @@ ORDER BY s.nro_siniestro;</sql>
       </output>
     </remotesteps>
     <GUI>
-      <xloc>400</xloc>
-      <yloc>100</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Normalizar Espacios</name>
-    <type>ReplaceString</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name/>
-    </partitioning>
-    <fields>
-      <field>
-        <in_stream_name>nro_siniestro</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>\s+</replace_string>
-        <replace_by_string/>
-        <set_empty_string>N</set_empty_string>
-        <replace_field_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-        <is_unicode>yes</is_unicode>
-      </field>
-      <field>
-        <in_stream_name>descrip_siniestro</in_stream_name>
-        <out_stream_name/>
-        <use_regex>yes</use_regex>
-        <replace_string>\s+</replace_string>
-        <replace_by_string> </replace_by_string>
-        <set_empty_string>N</set_empty_string>
-        <replace_field_by_string/>
-        <whole_word>no</whole_word>
-        <case_sensitive>no</case_sensitive>
-        <is_unicode>yes</is_unicode>
-      </field>
-    </fields>
-    <attributes/>
-    <cluster_schema/>
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>600</xloc>
-      <yloc>100</yloc>
+      <xloc>816</xloc>
+      <yloc>160</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
