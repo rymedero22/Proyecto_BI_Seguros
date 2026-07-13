@@ -82,11 +82,3 @@ Luego colocar la contraseña local de PostgreSQL en:
 ```env
 DB_PASSWORD="CONTRASENA_LOCAL"
 ```
-
-### 6. Probar la conexión
-
-```powershell
-python etl/conexion.py
-```
-
-La prueba debe confirmar la conexión con la base `seguros_bi` y mostrar los dos esquemas del proyecto.
